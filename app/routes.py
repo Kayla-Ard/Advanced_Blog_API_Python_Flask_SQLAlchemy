@@ -1,18 +1,37 @@
 from app import app 
 from flask import request, jsonify
-from app.schemas.userSchema import user_input_schema, user_output_schema, users_schema
+from app.schemas.userSchema import user_input_schema, user_output_schema, users_schema, user_login_schema
 from app.schemas.postSchema import post_schema, posts_schema
 from marshmallow import ValidationError
 from app.database import db 
 from app import db
 from app.models import User, Post
-from werkzeug.security import generate_password_hash
-from app.schemas import ma
+from werkzeug.security import generate_password_hash, check_password_hash
+from app.utils.utils import encode_token
+from app.auth import token_auth
 
 
 @app.route('/')
 def index():
     return 'Testing'
+
+# Token Route
+@app.route('/token', methods=["POST"])
+def get_token():
+    if not request.is_json:
+        return {"error": "Request body must be application/json"}, 400
+    try:
+        data = request.json
+        credentials = user_login_schema.load(data)
+        query = db.select(User).where(User.username==credentials['username'])
+        user = db.session.scalars(query).first()
+        if user is not None and check_password_hash(user.password, credentials['password']):
+            auth_token = encode_token(user.id)
+            return {'token': auth_token}, 200
+        else:
+            return {"error": "Username and/or password is incorrect"}, 401 
+    except ValidationError as err:
+        return err.messages, 400
 
 
 # User Routes
