@@ -2,10 +2,11 @@ from app import app
 from flask import request, jsonify
 from app.schemas.userSchema import user_input_schema, user_output_schema, users_schema, user_login_schema
 from app.schemas.postSchema import post_schema, posts_schema
+from app.schemas.commentSchema import comment_schema, comments_schema
 from marshmallow import ValidationError
 from app.database import db 
 from app import db
-from app.models import User, Post
+from app.models import User, Post, Comment
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.utils.utils import encode_token
 from app.auth import token_auth
@@ -34,7 +35,9 @@ def get_token():
         return err.messages, 400
 
 
-# User Routes
+
+
+# ----------- USER ROUTES -----------
 
 # Get all users
 @app.route('/users', methods=['GET'])
@@ -89,8 +92,37 @@ def create_user():
     except ValueError as err:
         return {"error": str(err)}, 400
     
+
+# Update a user
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        user = User.query.filter(User.user_id == user_id).first()
+        if not user:
+            return jsonify({'message': 'User could not be found with that User ID'}), 404
+        user_data = users_schema.load(request.json, partial = True)
+        for field, value in user_data.items():
+            setattr(user, field, value)
+        db.session.commit()
+        return jsonify({'message': 'User updated successfully'}), 200
+    except ValidationError as err:
+        return jsonify(err.messages), 400 
+
+
+# Delete a user
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.filter(user_id==user_id).first()
+    if not user:
+        return jsonify({'message': "User could not be found with the user ID"}), 404 
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted successfully'}), 200
+
+
+
     
-# Post Routes
+# ----------- POST ROUTES -----------
     
 # Get all posts
 @app.route('/posts', methods=['GET'])
@@ -132,3 +164,103 @@ def create_post():
         return err.messages, 400
     except Exception as e:
         return {"error": str(e)}, 500
+
+
+# Update a post
+@app.route('/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    try:
+        post = Post.query.filter(Post.post_id == post_id).first()
+        if not post:
+            return jsonify({'message': 'Post could not be found with that post ID'}), 404
+        post_data = post_schema.load(request.json, partial = True)
+        for field, value in post_data.items():
+            setattr(post, field, value)
+        db.session.commit()
+        return jsonify({'message': 'Post updated successfully'}), 200
+    except ValidationError as err:
+        return jsonify(err.messages), 400 
+
+
+# Delete a post
+@app.route('/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    post = Post.query.filter(post_id==post_id).first()
+    if not post:
+        return jsonify({'message': 'Post could not be found with that post ID'}), 404
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({'message': 'Post deleted successfully'}), 200
+
+
+
+
+# ----------- COMMENT ROUTES -----------
+    
+# Get all comments
+@app.route('/comments', methods=['GET'])
+def get_all_comments():
+    comments = db.session.query(Comment).all()
+    return comments_schema.jsonify(comments)
+
+
+# Get a single comment by ID
+@app.route('/comments/<int:comment_id>', methods=["GET"])
+def get_single_comment(comment_id):
+    comment = db.session.query(Comment).filter_by(id=comment_id).first()
+    if comment:
+        return comment_schema.jsonify(comment)
+    return {"error": f"Comment with ID {comment_id} does not exist"}, 404
+
+
+# Create a new comment
+@app.route('/comments', methods=["POST"])
+def create_comment():
+    if not request.is_json:
+        return {"error": "Request body must be application/json"}, 400 
+    
+    try:
+        data = request.json
+        comment_data = comment_schema.load(data)
+        
+        new_comment = Comment(
+            title=comment_data['title'],
+            body=comment_data['body'],
+            user_id=comment_data['user_id']
+        )
+        
+        db.session.add(new_comment)
+        db.session.commit()
+        
+        return comment_schema.jsonify(new_comment), 201 
+    except ValidationError as err:
+        return err.messages, 400
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+# Update a comment
+@app.route('/comments/<int:comment_id>', methods=['PUT'])
+def update_comment(comment_id):
+    try:
+        comment = Comment.query.filter(Comment.comment_id == comment_id).first()
+        if not comment:
+            return jsonify({'message': 'Comment could not be found with that comment ID'}), 404
+        comment_data = comment_schema.load(request.json, partial = True)
+        for field, value in comment_data.items():
+            setattr(comment, field, value)
+        db.session.commit()
+        return jsonify({'message': 'Comment updated successfully'}), 200
+    except ValidationError as err:
+        return jsonify(err.messages), 400 
+
+
+# Delete a comment
+@app.route('/comments/<int:comment_id>', methods=['DELETE'])
+def delete_comment(comment_id):
+    comment = Comment.query.filter(comment_id==comment_id).first()
+    if not comment:
+        return jsonify({'message': 'Comment could not be found with that comment ID'}), 404
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'message': 'Comment deleted successfully'}), 200
