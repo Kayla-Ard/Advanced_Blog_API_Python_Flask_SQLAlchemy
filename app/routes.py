@@ -22,7 +22,7 @@ from sqlalchemy.exc import IntegrityError
 def index():
     return 'Testing'
 
-# Token Route
+# Token Route/ Login
 @app.route('/token', methods=["POST"])
 def get_token():
     if not request.is_json:
@@ -47,6 +47,7 @@ def get_token():
 
 # Get all users
 @app.route('/users', methods=['GET'])
+@token_auth.login_required
 @cache.cached(timeout=60) 
 @limiter.limit("100 per day")
 def get_all_users():
@@ -57,6 +58,7 @@ def get_all_users():
 
 # Get a single user by ID
 @app.route('/users/<int:user_id>', methods=["GET"])
+@token_auth.login_required
 @cache.cached(timeout=60)  
 @limiter.limit("100 per day")
 def get_single_user(user_id):
@@ -101,6 +103,7 @@ def create_user():
 
 # Update a user
 @app.route('/users/<int:user_id>', methods=['PUT'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def update_user(user_id):
     try:
@@ -118,6 +121,7 @@ def update_user(user_id):
 
 # Delete a user
 @app.route('/users/<int:user_id>', methods=['DELETE'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def delete_user(user_id):
     user = User.query.get(user_id)
@@ -134,6 +138,7 @@ def delete_user(user_id):
     
 # Get all posts
 @app.route('/posts', methods=['GET'])
+@token_auth.login_required
 @cache.cached(timeout=60)  
 @limiter.limit("100 per day")
 def get_all_posts():
@@ -143,6 +148,7 @@ def get_all_posts():
 
 # Get a single post by ID
 @app.route('/posts/<int:post_id>', methods=["GET"])
+@token_auth.login_required
 @cache.cached(timeout=60)  
 @limiter.limit("100 per day")
 def get_single_post(post_id):
@@ -181,6 +187,7 @@ def create_post():
 
 # Update a post
 @app.route('/posts/<int:post_id>', methods=['PUT'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def update_post(post_id):
     try:
@@ -198,6 +205,7 @@ def update_post(post_id):
 
 # Delete a post
 @app.route('/posts/<int:post_id>', methods=['DELETE'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def delete_post(post_id):
     post = Post.query.get(post_id)
@@ -214,6 +222,7 @@ def delete_post(post_id):
     
 # Get all comments
 @app.route('/comments', methods=['GET'])
+@token_auth.login_required
 @cache.cached(timeout=60)  
 @limiter.limit("100 per day")
 def get_all_comments():
@@ -223,6 +232,7 @@ def get_all_comments():
 
 # Get a single comment by ID
 @app.route('/comments/<int:comment_id>', methods=["GET"])
+@token_auth.login_required
 @cache.cached(timeout=60) 
 @limiter.limit("100 per day")
 def get_single_comment(comment_id):
@@ -272,6 +282,7 @@ def create_comment():
 
 # Update a comment
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def update_comment(comment_id):
     try:
@@ -289,6 +300,7 @@ def update_comment(comment_id):
 
 # Delete a comment
 @app.route('/comments/<int:comment_id>', methods=['DELETE'])
+@token_auth.login_required
 @limiter.limit("100 per day")
 def delete_comment(comment_id):
     comment = Comment.query.get(comment_id)
