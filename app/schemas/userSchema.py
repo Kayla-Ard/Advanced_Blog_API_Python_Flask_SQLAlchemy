@@ -1,16 +1,13 @@
 from app.schemas import ma
-from marshmallow import fields
+from marshmallow import fields, validate
 
-
-# Define the User Schema
 class UserSchema(ma.Schema):
-    id = fields.Integer(required=False) 
-    first_name = fields.String(required=True)
-    last_name = fields.String(required=True)
-    username = fields.String(required=True)
-    email = fields.String(required=True)
-    password = fields.String(required=True)
-
+    id = fields.Integer(required=False)
+    first_name = fields.String(required=True, validate=validate.Length(max=255))
+    last_name = fields.String(required=True, validate=validate.Length(max=255))
+    username = fields.String(required=True, validate=validate.Length(max=255))
+    email = fields.Email(required=True)
+    password = fields.String(required=True, load_only=True)
 
 # Create instances of the schema
 user_input_schema = UserSchema()

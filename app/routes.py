@@ -10,6 +10,12 @@ from app.models import User, Post, Comment
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.utils.utils import encode_token
 from app.auth import token_auth
+from flask_caching import Cache
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from app import cache, limiter 
+from sqlalchemy.exc import IntegrityError 
+
 
 
 @app.route('/')
@@ -41,6 +47,8 @@ def get_token():
 
 # Get all users
 @app.route('/users', methods=['GET'])
+@cache.cached(timeout=60) 
+@limiter.limit("100 per day")
 def get_all_users():
     query = db.select(User)
     users = db.session.execute(query).scalars().all()
@@ -49,10 +57,10 @@ def get_all_users():
 
 # Get a single user by ID
 @app.route('/users/<int:user_id>', methods=["GET"])
+@cache.cached(timeout=60)  
+@limiter.limit("100 per day")
 def get_single_user(user_id):
-    
     user = db.session.get(User, user_id)
-
     if user is not None:
         return user_output_schema.jsonify(user)
     return {"error": f"Customer with ID {user_id} does not exist"}, 404
@@ -60,16 +68,14 @@ def get_single_user(user_id):
 
 # Create a new user
 @app.route('/users', methods=["POST"])
+@limiter.limit("100 per day")
 def create_user():
     
     if not request.is_json:
         return {"error": "Request body must be application/json"}, 400 
     try:
-    
         data = request.json
-        
         user_data = user_input_schema.load(data)
-        
         query = db.select(User).where( (User.username == user_data['username']) | (User.email == user_data['email']) )
         check_users = db.session.scalars(query).all()
         if check_users: 
@@ -95,26 +101,28 @@ def create_user():
 
 # Update a user
 @app.route('/users/<int:user_id>', methods=['PUT'])
+@limiter.limit("100 per day")
 def update_user(user_id):
     try:
-        user = User.query.filter(User.user_id == user_id).first()
+        user = User.query.get(user_id)
         if not user:
             return jsonify({'message': 'User could not be found with that User ID'}), 404
-        user_data = users_schema.load(request.json, partial = True)
+        user_data = user_input_schema.load(request.json, partial=True)
         for field, value in user_data.items():
             setattr(user, field, value)
         db.session.commit()
         return jsonify({'message': 'User updated successfully'}), 200
     except ValidationError as err:
-        return jsonify(err.messages), 400 
+        return jsonify(err.messages), 400
 
 
 # Delete a user
 @app.route('/users/<int:user_id>', methods=['DELETE'])
+@limiter.limit("100 per day")
 def delete_user(user_id):
-    user = User.query.filter(user_id==user_id).first()
+    user = User.query.get(user_id)
     if not user:
-        return jsonify({'message': "User could not be found with the user ID"}), 404 
+        return jsonify({'message': "User could not be found with the user ID"}), 404
     db.session.delete(user)
     db.session.commit()
     return jsonify({'message': 'User deleted successfully'}), 200
@@ -126,6 +134,8 @@ def delete_user(user_id):
     
 # Get all posts
 @app.route('/posts', methods=['GET'])
+@cache.cached(timeout=60)  
+@limiter.limit("100 per day")
 def get_all_posts():
     posts = db.session.query(Post).all()
     return posts_schema.jsonify(posts)
@@ -133,8 +143,10 @@ def get_all_posts():
 
 # Get a single post by ID
 @app.route('/posts/<int:post_id>', methods=["GET"])
+@cache.cached(timeout=60)  
+@limiter.limit("100 per day")
 def get_single_post(post_id):
-    post = db.session.query(Post).filter_by(id=post_id).first()
+    post = db.session.query(Post).get(post_id)
     if post:
         return post_schema.jsonify(post)
     return {"error": f"Post with ID {post_id} does not exist"}, 404
@@ -142,6 +154,7 @@ def get_single_post(post_id):
 
 # Create a new post
 @app.route('/posts', methods=["POST"])
+@limiter.limit("100 per day")
 def create_post():
     if not request.is_json:
         return {"error": "Request body must be application/json"}, 400 
@@ -168,24 +181,26 @@ def create_post():
 
 # Update a post
 @app.route('/posts/<int:post_id>', methods=['PUT'])
+@limiter.limit("100 per day")
 def update_post(post_id):
     try:
-        post = Post.query.filter(Post.post_id == post_id).first()
+        post = Post.query.get(post_id)
         if not post:
             return jsonify({'message': 'Post could not be found with that post ID'}), 404
-        post_data = post_schema.load(request.json, partial = True)
+        post_data = post_schema.load(request.json, partial=True)
         for field, value in post_data.items():
             setattr(post, field, value)
         db.session.commit()
         return jsonify({'message': 'Post updated successfully'}), 200
     except ValidationError as err:
-        return jsonify(err.messages), 400 
+        return jsonify(err.messages), 400
 
 
 # Delete a post
 @app.route('/posts/<int:post_id>', methods=['DELETE'])
+@limiter.limit("100 per day")
 def delete_post(post_id):
-    post = Post.query.filter(post_id==post_id).first()
+    post = Post.query.get(post_id)
     if not post:
         return jsonify({'message': 'Post could not be found with that post ID'}), 404
     db.session.delete(post)
@@ -199,6 +214,8 @@ def delete_post(post_id):
     
 # Get all comments
 @app.route('/comments', methods=['GET'])
+@cache.cached(timeout=60)  
+@limiter.limit("100 per day")
 def get_all_comments():
     comments = db.session.query(Comment).all()
     return comments_schema.jsonify(comments)
@@ -206,8 +223,10 @@ def get_all_comments():
 
 # Get a single comment by ID
 @app.route('/comments/<int:comment_id>', methods=["GET"])
+@cache.cached(timeout=60) 
+@limiter.limit("100 per day")
 def get_single_comment(comment_id):
-    comment = db.session.query(Comment).filter_by(id=comment_id).first()
+    comment = db.session.query(Comment).get(comment_id)
     if comment:
         return comment_schema.jsonify(comment)
     return {"error": f"Comment with ID {comment_id} does not exist"}, 404
@@ -215,50 +234,65 @@ def get_single_comment(comment_id):
 
 # Create a new comment
 @app.route('/comments', methods=["POST"])
+@limiter.limit("100 per day")
 def create_comment():
     if not request.is_json:
-        return {"error": "Request body must be application/json"}, 400 
-    
+        return {"error": "Request body must be application/json"}, 400
     try:
         data = request.json
         comment_data = comment_schema.load(data)
         
-        new_comment = Comment(
-            title=comment_data['title'],
-            body=comment_data['body'],
-            user_id=comment_data['user_id']
-        )
+        if not db.session.query(Post.id).filter_by(id=comment_data['post_id']).scalar():
+            return {"error": f"Post with ID {comment_data['post_id']} does not exist"}, 404
         
+        new_comment = Comment(
+            title="",
+            content=comment_data['content'],
+            user_id=comment_data['user_id'],
+            post_id=comment_data['post_id']
+        )
         db.session.add(new_comment)
         db.session.commit()
-        
-        return comment_schema.jsonify(new_comment), 201 
+        return comment_schema.jsonify(new_comment), 201
+    
     except ValidationError as err:
+        db.session.rollback() 
         return err.messages, 400
+    
+    except IntegrityError as e:
+        db.session.rollback()  
+        return {"error": f"IntegrityError: {str(e)}"}, 500
+    
     except Exception as e:
+        db.session.rollback()  
         return {"error": str(e)}, 500
+    
+    finally:
+        db.session.close()
 
 
 # Update a comment
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
+@limiter.limit("100 per day")
 def update_comment(comment_id):
     try:
-        comment = Comment.query.filter(Comment.comment_id == comment_id).first()
+        comment = Comment.query.get(comment_id)
         if not comment:
             return jsonify({'message': 'Comment could not be found with that comment ID'}), 404
-        comment_data = comment_schema.load(request.json, partial = True)
+        comment_data = comment_schema.load(request.json, partial=True)
         for field, value in comment_data.items():
             setattr(comment, field, value)
         db.session.commit()
         return jsonify({'message': 'Comment updated successfully'}), 200
     except ValidationError as err:
-        return jsonify(err.messages), 400 
+        return jsonify(err.messages), 400
 
 
 # Delete a comment
 @app.route('/comments/<int:comment_id>', methods=['DELETE'])
+@limiter.limit("100 per day")
 def delete_comment(comment_id):
-    comment = Comment.query.filter(comment_id==comment_id).first()
+    comment = Comment.query.get(comment_id)
     if not comment:
         return jsonify({'message': 'Comment could not be found with that comment ID'}), 404
     db.session.delete(comment)
