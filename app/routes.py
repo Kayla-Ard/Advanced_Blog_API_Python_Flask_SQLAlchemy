@@ -246,7 +246,6 @@ def create_comment():
             return {"error": f"Post with ID {comment_data['post_id']} does not exist"}, 404
         
         new_comment = Comment(
-            title="",
             content=comment_data['content'],
             user_id=comment_data['user_id'],
             post_id=comment_data['post_id']
