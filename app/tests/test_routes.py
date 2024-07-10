@@ -1,22 +1,56 @@
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from app import app
+from faker import Faker
 
-class TestRoutes(unittest.TestCase):
+fake = Faker()
 
+class TestTokenEndpoint(unittest.TestCase):
     def setUp(self):
+        app.config['TESTING'] = True
         self.app = app.test_client()
 
-    def test_get_posts(self):
+    @patch('app.routes.encode_token')
+    @patch('app.routes.db.session.scalars')
+    @patch('app.routes.check_password_hash')
+    
+    def test_successful_authenticate(self, mock_check_hash, mock_scalars, mock_encode_token):
+        mock_user = MagicMock()
+        mock_user.id = 123
         
-        with patch('app.routes.Post.query.all') as mock_query:
-            mock_query.return_value = [{'id': 1, 'title': 'Test Post'}]
-            response = self.app.get('/posts')
-            data = response.get_json()
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(data[0]['title'], 'Test Post')
+        mock_query = MagicMock()
+        mock_query.first.return_value = mock_user
+        
+        mock_scalars.return_value = mock_query
 
-if __name__ == '__main__':
-    unittest.main()
+        mock_check_hash.return_value = True
+        
+        mock_encode_token.return_value = 'random.jwt.token'
+
+        request_body = {
+            "username": fake.user_name(),
+            "password": fake.password()
+        }
+
+        response = self.client.post('/token', json=request_body)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['token'], 'random.jwt.token')
+
+
+    def test_unauthorized_user(self):
+        request_body = {
+            "username": fake.user_name(),
+            "password": fake.password()
+        }
+
+        response = self.client.post('/token', json=request_body)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json['error'], 'Username and/or password is incorrect')
+        
+        
+        
+# if __name__ == '__main__':
+#     unittest.main()

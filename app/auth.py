@@ -29,6 +29,10 @@ def login_required(func):
         return func(*args, **kwargs)
     return decorated_function
 
+@token_auth.get_user_roles 
+def get_roles (user):
+    return [user.role.role_name]
+
 @app.route('/protected', methods=['GET'])
 @login_required
 def protected_route():

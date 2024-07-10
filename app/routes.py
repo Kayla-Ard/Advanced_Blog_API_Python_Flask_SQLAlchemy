@@ -47,7 +47,7 @@ def get_token():
 
 # Get all users
 @app.route('/users', methods=['GET'])
-@token_auth.login_required
+@token_auth.login_required(role='admin')
 @cache.cached(timeout=60) 
 @limiter.limit("100 per day")
 def get_all_users():
@@ -58,7 +58,7 @@ def get_all_users():
 
 # Get a single user by ID
 @app.route('/users/<int:user_id>', methods=["GET"])
-@token_auth.login_required
+@token_auth.login_required(role='admin')
 @cache.cached(timeout=60)  
 @limiter.limit("100 per day")
 def get_single_user(user_id):
@@ -103,7 +103,7 @@ def create_user():
 
 # Update a user
 @app.route('/users/<int:user_id>', methods=['PUT'])
-@token_auth.login_required
+@token_auth.login_required(role='admin')
 @limiter.limit("100 per day")
 def update_user(user_id):
     try:
@@ -121,7 +121,7 @@ def update_user(user_id):
 
 # Delete a user
 @app.route('/users/<int:user_id>', methods=['DELETE'])
-@token_auth.login_required
+@token_auth.login_required(role='admin')
 @limiter.limit("100 per day")
 def delete_user(user_id):
     user = User.query.get(user_id)
