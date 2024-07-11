@@ -12,6 +12,7 @@ paths:
   /token:
     post:
       summary: Obtain JWT token
+      description: Endpoint to authenticate and receive a JWT token.
       requestBody:
         required: true
         content:
@@ -36,12 +37,15 @@ paths:
                 properties:
                   token:
                     type: string
+        '400':
+          description: Bad request
         '401':
           description: Unauthorized
 
   /users:
     get:
       summary: Retrieve all users
+      description: Endpoint to retrieve a list of all registered users.
       security:
         - BearerAuth: []
       responses:
@@ -53,11 +57,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
 
     post:
       summary: Create a new user
-      security:
-        - BearerAuth: []
+      description: Endpoint to create a new user.
       requestBody:
         required: true
         content:
@@ -75,10 +82,13 @@ paths:
           description: Bad request
         '401':
           description: Unauthorized
+        '500':
+          description: Internal server error
 
   /users/{id}:
     get:
       summary: Retrieve a user by ID
+      description: Endpoint to retrieve a user by their unique ID.
       security:
         - BearerAuth: []
       parameters:
@@ -94,11 +104,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
         '404':
           description: User not found
+        '500':
+          description: Internal server error
 
     put:
       summary: Update a user by ID
+      description: Endpoint to update an existing user's information by their unique ID.
       security:
         - BearerAuth: []
       parameters:
@@ -126,9 +141,12 @@ paths:
           description: Unauthorized
         '404':
           description: User not found
+        '500':
+          description: Internal server error
 
     delete:
       summary: Delete a user by ID
+      description: Endpoint to delete an existing user by their unique ID.
       security:
         - BearerAuth: []
       parameters:
@@ -144,6 +162,8 @@ paths:
           description: Unauthorized
         '404':
           description: User not found
+        '500':
+          description: Internal server error
 
 components:
   schemas:
@@ -174,4 +194,5 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
 
