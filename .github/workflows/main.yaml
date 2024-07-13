@@ -67,5 +67,8 @@ jobs:
     steps:
       - name: Deploy the App
         env:
-          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: curl "$deploy_url"  
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: 
+          flask db upgrade
+
+          gunicorn app:app
