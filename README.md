@@ -1,6 +1,6 @@
-# Blogging Application with Flask and SQLAlchemy
+# Advanced Blogging Application with CI/CD, Flask, and SQLAlchemy
 
-This project implements a blogging application backend using Flask and SQLAlchemy, providing CRUD (Create, Read, Update, Delete) operations for Users, Posts, and Comments. It also includes JWT security, caching with Flask-Caching, rate limiting with Flask-Limiter, unit tests with unittest, and API documentation with Swagger.
+This project implements a robust blogging application backend using Flask and SQLAlchemy, enhanced with CI/CD automation for seamless deployment. It includes advanced features for user management with roles, post and comment CRUD operations, JWT security, caching, rate limiting, unit tests, and API documentation with Swagger.
 
 ## Features
 
@@ -18,12 +18,13 @@ This project implements a blogging application backend using Flask and SQLAlchem
 ### Comments:
 
 - Create, Read, Update, Delete comments.
-L- ist all comments on a specific post.
+- List all comments on a specific post.
 
 ### Database Integration:
 
 - MySQL database integrated using Flask-SQLAlchemy.
-- Proper database relationships modeled between users, posts, and comments.
+- Proper database relationships modeled between users, roles, posts, and comments.
+- CI/CD pipelines implemented for automated testing, integration, and deployment.
 
 ### Performance Improvement:
 
