@@ -1,4 +1,4 @@
-name: Flask Blog CI/CD
+name: Flask_Blog_CI/CD
 
 on:
   push:
