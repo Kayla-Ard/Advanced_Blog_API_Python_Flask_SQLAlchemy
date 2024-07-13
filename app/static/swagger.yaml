@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:5000
+  - url: https://advanced-blog-api-python-flask-sqlalchemy.onrender.com
     description: Development server
 
 paths:
@@ -461,8 +461,8 @@ components:
         - user_id
         - post_id
 
-securitySchemes:
-  BearerAuth:
-    type: http
-    scheme: bearer
-    bearerFormat: JWT
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
