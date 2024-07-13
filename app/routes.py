@@ -1,19 +1,20 @@
-from app import app 
+from app import app, cache, limiter, db
 from flask import request, jsonify
 from app.schemas.userSchema import user_input_schema, user_output_schema, users_schema, user_login_schema
 from app.schemas.postSchema import post_schema, posts_schema
 from app.schemas.commentSchema import comment_schema, comments_schema
+from app.schemas.roleSchema import role_schema
 from marshmallow import ValidationError
-from app.database import db 
-from app import db
-from app.models import User, Post, Comment
+# from app.database import db
+# from app import db
+from app.models import User, Post, Comment, Role
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.utils.utils import encode_token
 from app.auth import token_auth
-from flask_caching import Cache
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from app import cache, limiter 
+# from flask_caching import Cache
+# from flask_limiter import Limiter
+# from flask_limiter.util import get_remote_address
+# from app import cache, limiter 
 from sqlalchemy.exc import IntegrityError 
 
 
@@ -39,6 +40,35 @@ def get_token():
             return {"error": "Username and/or password is incorrect"}, 401 
     except ValidationError as err:
         return err.messages, 400
+
+
+# Create a new role
+@app.route('/roles', methods=["POST"])
+def create_role():
+    
+    if not request.is_json:
+        return {"error": "Request body must be application/json"}, 400 
+    try:
+        data = request.json
+        role_data = role_schema.load(data)
+        query = db.select(Role).where(Role.role_name == role_data['role_name'])
+        check_roles = db.session.scalars(query).all()
+        if check_roles: 
+            return {"error": "Role with that role_name already exists"}, 400 
+        
+        new_role = Role(
+            role_name=role_data['role_name'],
+        )
+        
+        db.session.add(new_role)
+        db.session.commit()
+        
+        return jsonify(role_schema.dump(new_role)), 201 
+    
+    except ValidationError as err:
+        return err.messages, 400
+    except ValueError as err:
+        return {"error": str(err)}, 400
 
 
 

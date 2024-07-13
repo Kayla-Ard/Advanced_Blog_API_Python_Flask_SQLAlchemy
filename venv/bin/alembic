@@ -1,4 +1,4 @@
-#!/Users/kaylaard/Desktop/coding_temple/specialization/week_2/day_2/homework/venv/bin/python3.12
+#!/Users/kaylaard/Desktop/coding_temple/specialization/Flask_Blog_API_CI_CD/venv/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys
