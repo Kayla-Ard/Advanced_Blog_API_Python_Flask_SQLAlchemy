@@ -5,6 +5,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 from app.database import db, migrate
+from app.swagger_docs import swaggerui_blueprint
 
 
 load_dotenv()
@@ -25,6 +26,7 @@ migrate.init_app(app, db)
 cache.init_app(app)
 limiter.init_app(app)
 
+app.register_blueprint(swaggerui_blueprint)
 
 from app.routes import *
 
