@@ -400,6 +400,25 @@ paths:
         description: Endpoint to update an existing comment's information by its unique ID.
         security:
           - BearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: Comment found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Comment'
+          '401':
+            description: Unauthorized
+          '404':
+            description: Comment not found
+          '500':
+            description: Internal server error  
 
 components:
   schemas:
