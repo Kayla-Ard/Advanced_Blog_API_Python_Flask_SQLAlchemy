@@ -12,7 +12,7 @@ def encode_token(user_id):
         'user_id': user_id
     }
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=["HS256"])
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
     
 def decode_token(token):
