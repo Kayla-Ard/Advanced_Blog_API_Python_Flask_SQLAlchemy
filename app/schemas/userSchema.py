@@ -8,6 +8,7 @@ class UserSchema(ma.Schema):
     username = fields.String(required=True, validate=validate.Length(max=255))
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True)
+    role_id = fields.Integer(required=False)
 
 # Create instances of the schema
 user_input_schema = UserSchema()
