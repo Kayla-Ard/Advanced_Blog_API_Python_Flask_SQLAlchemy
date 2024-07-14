@@ -324,6 +324,12 @@ paths:
         description: Endpoint to retrieve a list of all comments.
         security:
           - BearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
         responses:
           '200':
             description: A list of comments
@@ -445,6 +451,20 @@ components:
         - body
         - user_id
     
+    PostInput:
+          type: object
+          properties:
+            title:
+              type: string
+            content:
+              type: string
+            author_id:
+              type: integer
+          required:
+            - title
+            - content
+            - author_id
+
     Comment:
       type: object
       properties:
@@ -461,6 +481,20 @@ components:
         - user_id
         - post_id
 
+      CommentInput:
+        type: object
+        properties:
+          content:
+            type: string
+          post_id:
+            type: integer
+          author_id:
+            type: integer
+        required:
+          - content
+          - post_id
+          - author_id
+          
   securitySchemes:
     BearerAuth:
       type: http
