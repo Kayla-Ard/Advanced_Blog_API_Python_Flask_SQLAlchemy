@@ -393,7 +393,7 @@ paths:
         summary: Update a comment by ID
         description: Endpoint to update an existing comment's information by its unique ID.
         security:
-          - BearerAuth
+          - BearerAuth: []
 
 components:
   schemas:
