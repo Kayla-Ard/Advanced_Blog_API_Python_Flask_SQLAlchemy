@@ -481,20 +481,20 @@ components:
         - user_id
         - post_id
 
-      CommentInput:
-        type: object
-        properties:
-          content:
-            type: string
-          post_id:
-            type: integer
-          author_id:
-            type: integer
-        required:
-          - content
-          - post_id
-          - author_id
-          
+    CommentInput:
+      type: object
+      properties:
+        content:
+          type: string
+        post_id:
+          type: integer
+        author_id:
+          type: integer
+      required:
+        - content
+        - post_id
+        - author_id
+
   securitySchemes:
     BearerAuth:
       type: http
