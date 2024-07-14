@@ -120,6 +120,8 @@ def create_user():
             email=user_data['email'],
             password=generate_password_hash(user_data['password'])
         )
+        if 'role_id' in user_data:
+            new_user.role_id = user_data['role_id']
         
         db.session.add(new_user)
         db.session.commit()
